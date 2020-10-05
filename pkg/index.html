@@ -20,6 +20,24 @@
             this.y = yPos;
         }
 
+        const speed = document.location.pathname === "/speed"
+            ? 100
+            : document.location.pathname === "/ahhh"
+                ? 50
+                : 200;
+        (() => {
+            const speed = $("#speed");
+            if (document.location.pathname === "/speed") {
+                speed.html("Normal speed");
+                speed.attr("href", "/");
+            } else {
+                speed.html("Speedi speed");
+                speed.attr("href", "/speed");
+                $("#game-over").attr("href", "/speed");
+            }
+        })();
+
+
         const startGame = () => {
             $(".game").removeClass("over");
 
@@ -75,7 +93,7 @@
                     let pos = snake[a];
                     $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
                 }
-            }, 200);
+            }, speed);
         }
 
         (async () => {
@@ -93,6 +111,7 @@
     <h4>Made by Nathan Hare</h4>
     <p id="score"></p>
     <p id="hs"></p>
+    <a href="/" id="speed"></a>
     <a id="game-over" href="/">
         <h1>Game Over</h1>
         Click to restart
