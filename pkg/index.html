@@ -30,10 +30,15 @@
             if (document.location.pathname === "/speed") {
                 speed.html("Normal speed");
                 speed.attr("href", "/");
+                $("#game-over").attr("href", "/speed");
+            } else if (document.location.pathname === "/ahhh") {
+                speed.html("Normal speed");
+                speed.attr("href", "/ahhh");
+                $("#game-over").attr("href", "/ahhh");
             } else {
                 speed.html("Speedi speed");
                 speed.attr("href", "/speed");
-                $("#game-over").attr("href", "/speed");
+                $("#game-over").attr("href", "/");
             }
         })();
 
@@ -58,7 +63,7 @@
             let snake = [new Point(0, 0)];
             let fruit = new Point(ranint(GRID_SIZE), ranint(GRID_SIZE));
 
-            let hs = document.cookie.split(";").map((a) => a.startsWith("hs=") ? a.replace("hs=", "") : "").join("");
+            let hs = document.cookie.split(";").map((a) => a.startsWith("hs" + speed + "=") ? a.replace("hs" + speed + "=", "") : "").join("");
 
             let interval = setInterval(() => {
                 console.log("update");
@@ -79,7 +84,7 @@
 
                 hs = Math.max(hs, score);
 
-                document.cookie = "hs=" + hs + ";";
+                document.cookie = "hs" + speed + "=" + hs + ";";
 
                 $(".snake").removeClass("snake");
                 $(".fruit").removeClass("fruit");
