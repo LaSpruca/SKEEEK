@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Snake</title>
+
+    <link rel="stylesheet" href="main.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="module">
+        import init, { update_wasm, generate_grid, ranint } from "./snake_wasm.js";
+
+        const GRID_SIZE = 20;
+
+        function Point(xPos, yPos) {
+            this.x = xPos;
+            this.y = yPos;
+        }
+
+        const startGame = () => {
+            $(".game").removeClass("over");
+
+            let direction = "";
+            let score = 0;
+
+            document.addEventListener("keydown", event => {
+                if (!(event.isComposing || event.keyCode === 229)) {
+                    if (event.key.startsWith("Arrow")) {
+                        let key = event.key;
+                        key = key.replace("Arrow", "");
+                        key = key.toLocaleLowerCase();
+                        direction = key;
+                    }
+                }
+            });
+
+            let snake = [new Point(0, 0)];
+            let fruit = new Point(ranint(GRID_SIZE), ranint(GRID_SIZE));
+
+            let hs = document.cookie.split(";").map((a) => a.startsWith("hs=") ? a.replace("hs=", "") : "").join("");
+
+            let interval = setInterval(() => {
+                console.log("update");
+
+                let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
+                if (result["failed"]) {
+                    $(".game").addClass("over");
+                    console.log("You failed");
+                    clearInterval(interval);
+                }
+
+                snake = result["snake"];
+                fruit = result["fruit"];
+
+                if (result["got_fruit"]) {
+                    score++;
+                }
+
+                hs = Math.max(hs, score);
+
+                document.cookie = "hs=" + hs + ";";
+
+                $(".snake").removeClass("snake");
+                $(".fruit").removeClass("fruit");
+
+                $("#score").html("Score " + score);
+                $("#hs").html("High Score " + hs);
+
+                $("#" + (fruit["x"] * GRID_SIZE + fruit["y"])).addClass("fruit");
+
+                for (let a in snake) {
+                    let pos = snake[a];
+                    $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
+                }
+            }, 200);
+        }
+
+        (async () => {
+            await init();
+
+            $(".grid").html(generate_grid(GRID_SIZE));
+
+            startGame();
+        })();
+    </script>
+</head>
+<body>
+<div class="game">
+    <h1>Snake Game</h1>
+    <h4>Made by Nathan Hare</h4>
+    <p id="score"></p>
+    <p id="hs"></p>
+    <a id="game-over" href="/">
+        <h1>Game Over</h1>
+        Click to restart
+    </a>
+    <div class="grid">
+
+    </div>
+    <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
+    <a href="https://laspruca.tk">My Website</a>
+</div>
+
+</body>
+</html>

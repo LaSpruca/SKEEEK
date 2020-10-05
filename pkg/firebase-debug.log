@@ -1,0 +1,13 @@
+[debug] [2020-10-05T07:08:24.316Z] ----------------------------------------------------------------------
+[debug] [2020-10-05T07:08:24.318Z] Command:       /home/nathan/.nvm/versions/node/v14.3.0/bin/node /home/nathan/.nvm/versions/node/v14.3.0/bin/firebase deploy
+[debug] [2020-10-05T07:08:24.318Z] CLI Version:   8.11.2
+[debug] [2020-10-05T07:08:24.318Z] Platform:      linux
+[debug] [2020-10-05T07:08:24.318Z] Node Version:  v14.3.0
+[debug] [2020-10-05T07:08:24.319Z] Time:          Mon Oct 05 2020 20:08:24 GMT+1300 (New Zealand Daylight Time)
+[debug] [2020-10-05T07:08:24.319Z] ----------------------------------------------------------------------
+[debug] [2020-10-05T07:08:24.319Z] 
+[debug] [2020-10-05T07:08:24.323Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-10-05T07:08:24.323Z] > authorizing via signed-in user
+[debug] [2020-10-05T07:08:24.323Z] [iam] checking project snake-5528a for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-10-05T07:08:24.325Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/snake-5528a:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
