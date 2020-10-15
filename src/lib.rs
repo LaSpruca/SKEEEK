@@ -57,17 +57,6 @@ impl PartialEq for Point {
 }
 
 #[wasm_bindgen]
-pub fn generate_grid(size: u32) -> String {
-    (0..size).
-        map(
-            |x| format!(r#"<div class="grid-row">{}</div>"#,
-                        (0..size).
-                            map(|y| format!(r#"<div class="grid-element" id={}></div>"#, (x * size) + y))
-                            .collect::<Vec<String>>().join("")
-            )).collect::<Vec<String>>().join("")
-}
-
-#[wasm_bindgen]
 pub fn update_wasm(snake: String, fruit: String, size: i32, direcrion: String) -> String {
     update(snake, fruit, size, direcrion)
 }

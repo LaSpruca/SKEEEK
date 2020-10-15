@@ -10,8 +10,11 @@
     <link rel="stylesheet" href="main.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
+            integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA=="
+            crossorigin="anonymous"></script>
     <script type="module">
-        import init, { update_wasm, generate_grid, ranint } from "./snake_wasm.js";
+        import init, { update_wasm, ranint } from "./snake_wasm.js";
 
         const GRID_SIZE = 20;
 
@@ -19,6 +22,13 @@
             this.x = xPos;
             this.y = yPos;
         }
+
+        const generate_grid = (size) => [...Array(size).keys()].map(
+            (x) => '<div class="grid-row">'
+                    +  [...Array(size).keys()].map(
+                    (y) => '<div class="grid-element" id=' + (x * size + y) + '></div>'
+                ).join("") + "</div>"
+        ).join("");
 
         const speed = document.location.pathname === "/speed"
             ? 100
@@ -63,10 +73,11 @@
             let snake = [new Point(0, 0)];
             let fruit = new Point(ranint(GRID_SIZE), ranint(GRID_SIZE));
 
-            let hs = document.cookie.split(";").map((a) => a.startsWith("hs" + speed + "=") ? a.replace("hs" + speed + "=", "") : "").join("");
+            let hs = $.cookie("hs" + speed) === undefined ? 0 : $.cookie("hs" + speed);
+
+            // let hs = document.cookie.split(";").map((a) => a.startsWith("hs" + speed + "=") ? a.replace("hs" + speed + "=", "") : "").join("");
 
             let interval = setInterval(() => {
-                console.log("update");
 
                 let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
                 if (result["failed"]) {
@@ -80,11 +91,10 @@
 
                 if (result["got_fruit"]) {
                     score++;
+                    hs = Math.max(hs, score);
+
+                    $.cookie("hs" + speed, hs, {expires: 1000000});
                 }
-
-                hs = Math.max(hs, score);
-
-                document.cookie = "hs" + speed + "=" + hs + ";";
 
                 $(".snake").removeClass("snake");
                 $(".fruit").removeClass("fruit");
