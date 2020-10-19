@@ -9,7 +9,9 @@
 
     <link rel="stylesheet" href="main.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+            integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+            crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
             integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA=="
             crossorigin="anonymous"></script>
@@ -54,8 +56,6 @@
 
 
         const startGame = () => {
-            $(".game").removeClass("over");
-
             let direction = "";
             let score = 0;
 
@@ -128,22 +128,21 @@
     </script>
 </head>
 <body>
-<div class="game">
-    <h1>Snake Game</h1>
-    <h4>Made by Nathan Hare</h4>
-    <p id="score"></p>
-    <p id="hs"></p>
-    <a href="/" id="speed"></a>
-    <a id="game-over" href="/">
-        <h1>Game Over</h1>
-        Click to restart
-    </a>
-    <div class="grid">
+    <div class="game">
+        <h1>Snake Game</h1>
+        <h4>Made by Nathan Hare</h4>
+        <p id="score"></p>
+        <p id="hs"></p>
+        <a href="/" id="speed"></a>
+        <a id="game-over" href="/">
+            <h1>Game Over</h1>
+            Click to restart
+        </a>
+        <div class="grid">
 
+        </div>
+        <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
+        <a href="https://laspruca.tk">My Website</a>
     </div>
-    <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
-    <a href="https://laspruca.tk">My Website</a>
-</div>
-
 </body>
 </html>
