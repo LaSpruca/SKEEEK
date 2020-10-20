@@ -144,5 +144,24 @@
         <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
         <a href="https://laspruca.tk">My Website</a>
     </div>
+
+    <!-- Set up the firebase sdk -->
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCz0p-MLGgHyjxoDuvVq6U5l_HN8mlMkO0",
+            authDomain: "snake-5528a.firebaseapp.com",
+            databaseURL: "https://snake-5528a.firebaseio.com",
+            projectId: "snake-5528a",
+            storageBucket: "snake-5528a.appspot.com",
+            messagingSenderId: "1079064198095",
+            appId: "1:1079064198095:web:4b28358e2aeef0a9b9f0ba",
+            measurementId: "G-MF59V48RLD"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+    </script>
 </body>
 </html>
