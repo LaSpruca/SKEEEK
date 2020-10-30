@@ -32,7 +32,7 @@
                 ).join("") + "</div>"
         ).join("");
 
-        const speed = document.location.pathname === "/speed"
+        let speed = document.location.pathname === "/speed"
             ? 100
             : document.location.pathname === "/ahhh"
                 ? 50
@@ -83,39 +83,50 @@
 
             $("#score").html("Score " + score);
             $("#hs").html("High Score " + hs);
+            let interval = -1;
+            var makeInterval = () => {
+               interval = setInterval(() => {
 
-            let interval = setInterval(() => {
+                    let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
+                    if (result["failed"]) {
+                        $(".game").addClass("over");
+                        console.log("You failed");
+                        clearInterval(interval);
+                    }
 
-                let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
-                if (result["failed"]) {
-                    $(".game").addClass("over");
-                    console.log("You failed");
-                    clearInterval(interval);
-                }
+                    snake = result["snake"];
+                    fruit = result["fruit"];
 
-                snake = result["snake"];
-                fruit = result["fruit"];
+                    if (result["got_fruit"]) {
+                        $("#score").html("Score " + score);
+                        $("#hs").html("High Score " + hs);
 
-                if (result["got_fruit"]) {
-                    $("#score").html("Score " + score);
-                    $("#hs").html("High Score " + hs);
+                        score++;
+                        hs = Math.max(hs, score);
 
-                    score++;
-                    hs = Math.max(hs, score);
+                        $.cookie("hs" + speed, hs, {expires: 1000000});
+                    }
 
-                    $.cookie("hs" + speed, hs, {expires: 1000000});
-                }
+                    $(".snake").removeClass("snake");
+                    $(".fruit").removeClass("fruit");
 
-                $(".snake").removeClass("snake");
-                $(".fruit").removeClass("fruit");
+                    $("#" + (fruit["x"] * GRID_SIZE + fruit["y"])).addClass("fruit");
 
-                $("#" + (fruit["x"] * GRID_SIZE + fruit["y"])).addClass("fruit");
-
-                for (let a in snake) {
-                    let pos = snake[a];
-                    $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
-                }
-            }, speed);
+                    for (let a in snake) {
+                        let pos = snake[a];
+                        $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
+                    }
+                }, speed);
+            }
+            makeInterval();
+            $('#speedSlider').on('change', ()=>{
+                let value = $(this).val();
+                speed = value;
+                clearInterval(interval);
+                makeInterval();
+               
+            });
+            
         }
 
         (async () => {
@@ -131,6 +142,7 @@
     <div class="game">
         <h1>Snake Game</h1>
         <h4>Made by Nathan Hare</h4>
+        <input type="range" min="50" max="300" id="speedSlider">
         <p id="score"></p>
         <p id="hs"></p>
         <a href="/" id="speed"></a>
