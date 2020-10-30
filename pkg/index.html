@@ -84,11 +84,13 @@
             $("#score").html("Score " + score);
             $("#hs").html("High Score " + hs);
             let interval = -1;
+            let gameOver = false;
             var makeInterval = () => {
                interval = setInterval(() => {
 
                     let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
                     if (result["failed"]) {
+                        gameOver = true;
                         $(".game").addClass("over");
                         console.log("You failed");
                         clearInterval(interval);
@@ -122,11 +124,19 @@
             $('#speedSlider').on('change', ()=>{
                 let value = $(this).val();
                 speed = value;
+                $('#speedNum').text(speed);
+                if(gameOver) {
+                    return;
+                }
                 clearInterval(interval);
                 makeInterval();
                
             });
             
+            $('#game-over').on('click', ()=>{
+                $(".game").removeClass("over");
+                startGame();
+            });
         }
 
         (async () => {
@@ -136,20 +146,23 @@
 
             startGame();
         })();
+        
+        
     </script>
 </head>
 <body>
     <div class="game">
         <h1>Snake Game</h1>
         <h4>Made by Nathan Hare</h4>
-        <input type="range" min="50" max="300" id="speedSlider">
+        <input style="max-width: 300px;" type="range" min="50" max="250" id="speedSlider" value="50">
+        <h1 id="speedNum">50</h1>
         <p id="score"></p>
         <p id="hs"></p>
         <a href="/" id="speed"></a>
-        <a id="game-over" href="/">
+        <button id="game-over">
             <h1>Game Over</h1>
             Click to restart
-        </a>
+        </button>
         <div class="grid">
 
         </div>
