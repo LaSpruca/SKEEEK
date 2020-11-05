@@ -16,7 +16,10 @@
             integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA=="
             crossorigin="anonymous"></script>
     <script type="module">
-        import init, { update_wasm, ranint } from "./snake_wasm.js";
+        Array.prototype.last = function () {
+            return this[this.length - 1];
+        }
+        import init, {update_wasm, ranint} from "./snake_wasm.js";
 
         const GRID_SIZE = 20;
 
@@ -27,12 +30,12 @@
 
         const generate_grid = (size) => [...Array(size).keys()].map(
             (x) => '<div class="grid-row">'
-                    +  [...Array(size).keys()].map(
+                + [...Array(size).keys()].map(
                     (y) => '<div class="grid-element" id=' + (x * size + y) + '></div>'
                 ).join("") + "</div>"
         ).join("");
 
-        let speed = document.location.pathname === "/speed"
+        const speed = document.location.pathname === "/speed"
             ? 100
             : document.location.pathname === "/ahhh"
                 ? 50
@@ -56,7 +59,7 @@
 
 
         const startGame = () => {
-            let direction = "";
+            let direction = [];
             let score = 0;
 
             document.addEventListener("keydown", event => {
@@ -83,60 +86,38 @@
 
             $("#score").html("Score " + score);
             $("#hs").html("High Score " + hs);
-            let interval = -1;
-            let gameOver = false;
-            var makeInterval = () => {
-               interval = setInterval(() => {
 
-                    let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
-                    if (result["failed"]) {
-                        gameOver = true;
-                        $(".game").addClass("over");
-                        console.log("You failed");
-                        clearInterval(interval);
-                    }
-
-                    snake = result["snake"];
-                    fruit = result["fruit"];
-
-                    if (result["got_fruit"]) {
-                        $("#score").html("Score " + score);
-                        $("#hs").html("High Score " + hs);
-
-                        score++;
-                        hs = Math.max(hs, score);
-
-                        $.cookie("hs" + speed, hs, {expires: 1000000});
-                    }
-
-                    $(".snake").removeClass("snake");
-                    $(".fruit").removeClass("fruit");
-
-                    $("#" + (fruit["x"] * GRID_SIZE + fruit["y"])).addClass("fruit");
-
-                    for (let a in snake) {
-                        let pos = snake[a];
-                        $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
-                    }
-                }, speed);
-            }
-            makeInterval();
-            $('#speedSlider').on('change', ()=>{
-                let value = $(this).val();
-                speed = value;
-                $('#speedNum').text(speed);
-                if(gameOver) {
-                    return;
+            let interval = setInterval(() => {
+                let result = JSON.parse(update_wasm(JSON.stringify(snake), JSON.stringify(fruit), GRID_SIZE, direction));
+                if (result["failed"]) {
+                    $(".game").addClass("over");
+                    console.log("You failed");
+                    clearInterval(interval);
                 }
-                clearInterval(interval);
-                makeInterval();
-               
-            });
-            
-            $('#game-over').on('click', ()=>{
-                $(".game").removeClass("over");
-                startGame();
-            });
+
+                snake = result["snake"];
+                fruit = result["fruit"];
+
+                if (result["got_fruit"]) {
+                    $("#score").html("Score " + score);
+                    $("#hs").html("High Score " + hs);
+
+                    score++;
+                    hs = Math.max(hs, score);
+
+                    $.cookie("hs" + speed, hs, {expires: 1000000});
+                }
+
+                $(".snake").removeClass("snake");
+                $(".fruit").removeClass("fruit");
+
+                $("#" + (fruit["x"] * GRID_SIZE + fruit["y"])).addClass("fruit");
+
+                for (let a in snake) {
+                    let pos = snake[a];
+                    $("#" + (pos["x"] * GRID_SIZE + pos["y"])).addClass("snake");
+                }
+            }, speed);
         }
 
         (async () => {
@@ -146,47 +127,43 @@
 
             startGame();
         })();
-        
-        
     </script>
 </head>
 <body>
-    <div class="game">
-        <h1>Snake Game</h1>
-        <h4>Made by Nathan Hare</h4>
-        <input style="max-width: 300px;" type="range" min="50" max="250" id="speedSlider" value="50">
-        <h1 id="speedNum">50</h1>
-        <p id="score"></p>
-        <p id="hs"></p>
-        <a href="/" id="speed"></a>
-        <button id="game-over">
-            <h1>Game Over</h1>
-            Click to restart
-        </button>
-        <div class="grid">
+<div class="game">
+    <h1>Snake Game</h1>
+    <h4>Made by Nathan Hare</h4>
+    <p id="score"></p>
+    <p id="hs"></p>
+    <a href="/" id="speed"></a>
+    <a id="game-over" href="/">
+        <h1>Game Over</h1>
+        Click to restart
+    </a>
+    <div class="grid">
 
-        </div>
-        <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
-        <a href="https://laspruca.tk">My Website</a>
     </div>
+    <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
+    <a href="https://laspruca.tk">My Website</a>
+</div>
 
-    <!-- Set up the firebase sdk -->
-    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCz0p-MLGgHyjxoDuvVq6U5l_HN8mlMkO0",
-            authDomain: "snake-5528a.firebaseapp.com",
-            databaseURL: "https://snake-5528a.firebaseio.com",
-            projectId: "snake-5528a",
-            storageBucket: "snake-5528a.appspot.com",
-            messagingSenderId: "1079064198095",
-            appId: "1:1079064198095:web:4b28358e2aeef0a9b9f0ba",
-            measurementId: "G-MF59V48RLD"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        firebase.analytics();
-    </script>
+<!-- Set up the firebase sdk -->
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCz0p-MLGgHyjxoDuvVq6U5l_HN8mlMkO0",
+        authDomain: "snake-5528a.firebaseapp.com",
+        databaseURL: "https://snake-5528a.firebaseio.com",
+        projectId: "snake-5528a",
+        storageBucket: "snake-5528a.appspot.com",
+        messagingSenderId: "1079064198095",
+        appId: "1:1079064198095:web:4b28358e2aeef0a9b9f0ba",
+        measurementId: "G-MF59V48RLD"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+</script>
 </body>
 </html>
