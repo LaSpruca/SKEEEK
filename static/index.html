@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Snake</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+      integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
+      integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA=="
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="main.js"></script>
+  </head>
+  <body>
+    <div class="game">
+      <h1>Snake Game</h1>
+      <h4>Made by Nathan Hare</h4>
+      <p id="score"></p>
+      <p id="hs"></p>
+      <a href="/" id="speed"></a>
+      <a id="game-over" href="/">
+        <h1>Game Over</h1>
+        Click to restart
+      </a>
+      <div class="grid"></div>
+      <a href="https://github.com/LaSpruca/SNEEEK">GitHub Repo</a>
+      <a href="https://laspruca.tk">My Website</a>
+    </div>
+
+    <!-- Set up the firebase sdk -->
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCz0p-MLGgHyjxoDuvVq6U5l_HN8mlMkO0",
+        authDomain: "snake-5528a.firebaseapp.com",
+        databaseURL: "https://snake-5528a.firebaseio.com",
+        projectId: "snake-5528a",
+        storageBucket: "snake-5528a.appspot.com",
+        messagingSenderId: "1079064198095",
+        appId: "1:1079064198095:web:4b28358e2aeef0a9b9f0ba",
+        measurementId: "G-MF59V48RLD",
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
+  </body>
+</html>
