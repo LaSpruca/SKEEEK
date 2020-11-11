@@ -15,9 +15,8 @@ jobs:
         with:
           cmd: install
       - uses: icepuma/rust-action@master
-      - uses: borales/actions-yarn@v2.0.0
         with:
-          cmd: build
+          args: yarn build
       - uses: actions/checkout@v2
       - name: Deploy to firebase
         uses: w9jds/firebase-action@master
