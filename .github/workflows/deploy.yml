@@ -14,7 +14,7 @@ jobs:
       - uses: borales/actions-yarn@v2.0.0
         with:
           cmd: install
-      - uses: rust-action@master
+      - uses: icepuma/rust-action@master
       - uses: borales/actions-yarn@v2.0.0
         with:
           cmd: build
