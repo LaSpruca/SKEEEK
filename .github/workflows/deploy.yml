@@ -17,8 +17,6 @@ jobs:
           toolchain: stable
           override: true
       - uses: borales/actions-yarn@v2.0.0
-      - name: Yarn build
-        run: yarn install
       - name: wasm-pack build
         run: wasm-pack build
       - name: yarn build
