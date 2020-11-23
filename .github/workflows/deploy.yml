@@ -17,13 +17,12 @@ jobs:
           toolchain: stable
           override: true
       - uses: borales/actions-yarn@v2.0.0
-        name: Yarn Install
-        with:
-          cmd: install
-      - uses: borales/actions-yarn@v2.0.0
-        name: Yarn Build
-        with:
-          cmd: build 
+      - name: Yarn build
+        run: yarn install
+      - name: wasm-pack build
+        run: wasm-pack build
+      - name: yarn build
+        run: yarn build
       - uses: actions/checkout@v2
       - name: Deploy to firebase
         uses: w9jds/firebase-action@master

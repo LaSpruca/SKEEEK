@@ -4,3 +4,7 @@ yarn-error.log
 /target
 /pkg
 /wasm-pack.log
+
+.firebase/
+
+.idea/
