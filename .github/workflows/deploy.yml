@@ -11,14 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: jetli/wasm-pack-action@v0.3.0
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
       - uses: borales/actions-yarn@v2.0.0
+        name: Yarn Install
         with:
           cmd: install
       - uses: borales/actions-yarn@v2.0.0
+        name: Yarn Build
         with:
           cmd: build 
       - uses: actions/checkout@v2
