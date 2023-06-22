@@ -15,6 +15,8 @@ jobs:
         with:
           # Optional version of trunk to install(eg. 'v0.16.0', 'latest')
           version: 'latest'
+      - name: Install wasm toolchain
+        run: rustup target add wasm32-unknown-unknown
       - name: Build application
         run: trunk build --release
       - name: Deploy to firebase
