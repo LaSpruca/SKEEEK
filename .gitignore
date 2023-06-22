@@ -1,10 +1,2 @@
-node_modules
-yarn-error.log
-/dist
 /target
-/pkg
-/wasm-pack.log
-
-.firebase/
-
-.idea/
+/dist

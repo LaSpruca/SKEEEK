@@ -1,0 +1,10 @@
+.game {
+  position: relative;
+
+  .head {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background-color: green;
+  }
+}
