@@ -4,17 +4,16 @@ use leptos::{
     leptos_dom::helpers::{location_pathname, IntervalHandle},
     *,
 };
-use log::*;
 use std::{cell::Cell, rc::Rc};
 
 pub fn get_tick_length() -> Duration {
     Duration::from_millis(
         (|| match location_pathname()?.as_str() {
-            "/sped" => Some(50),
-            "/ahhh" => Some(25),
+            "/sped" => Some(100),
+            "/ahhh" => Some(50),
             _ => None,
         })()
-        .unwrap_or(100),
+        .unwrap_or(150),
     )
 }
 
