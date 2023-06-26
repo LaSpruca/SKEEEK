@@ -9,4 +9,20 @@
     height: 25px;
     background-color: green;
   }
+
+  .screen {
+    display: none;
+  }
+
+  &.start .screen.start {
+    display: block;
+  }
+
+  &.pause .screen.pause {
+    display: block;
+  }
+
+  &.loose .screen.loose {
+    display: block;
+  }
 }

@@ -1,6 +1,6 @@
 use crate::util::{get_tick_length, tweened};
 use leptos::*;
-use log::*;
+use log::debug;
 
 const SIZE: i32 = 20;
 const BLOCK_SIZE: i32 = 25;
@@ -24,35 +24,26 @@ enum GameState {
     Play,
     Loose,
     Pause,
+    Start,
+}
+
+impl GameState {
+    fn class(&self) -> &str {
+        match self {
+            GameState::Play => "",
+            GameState::Loose => "loose",
+            GameState::Pause => "pause",
+            GameState::Start => "start",
+        }
+    }
 }
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
-    info!("Starting application");
+    // Create game state
     let (head_position, set_head_position) = create_signal(cx, Position { x: 0, y: 0 });
     let (direction, set_direction) = create_signal(cx, Direction::Down);
-    let (game_state, set_game_state) = create_signal(cx, GameState::Pause);
-    let set_direction = move |direction| {
-        if game_state() == GameState::Play {
-            set_direction(direction);
-        } else if game_state() == GameState::Pause {
-            set_game_state(GameState::Play);
-            set_direction(direction);
-        }
-    };
-
-    window_event_listener(ev::keydown, move |kb_event| {
-        match kb_event.key().to_ascii_lowercase().as_str() {
-            "w" | "arrowup" => set_direction(Direction::Up),
-            "a" | "arrowleft" => set_direction(Direction::Left),
-            "s" | "arrowdown" => set_direction(Direction::Down),
-            "d" | "arrowright" => set_direction(Direction::Right),
-            "escape" => set_game_state(GameState::Pause),
-            _ => {
-                debug!("Code: {}", kb_event.key().to_ascii_lowercase());
-            }
-        }
-    });
+    let (game_state, set_game_state) = create_signal(cx, GameState::Start);
 
     let interval_fn = move || match direction() {
         Direction::Up => set_head_position.update(|mut pos| {
@@ -89,18 +80,54 @@ pub fn App(cx: Scope) -> impl IntoView {
         }),
     };
 
+    // Setup keyboard event listener
+    window_event_listener(ev::keydown, move |kb_event| {
+        debug!("Keyboard is keyboarding {}", kb_event.key());
+        match (game_state(), kb_event.key().to_ascii_lowercase().as_str()) {
+            (GameState::Play, "w" | "arrowup") => set_direction(Direction::Up),
+            (GameState::Play, "a" | "arrowleft") => set_direction(Direction::Left),
+            (GameState::Play, "s" | "arrowdown") => set_direction(Direction::Down),
+            (GameState::Play, "d" | "arrowright") => set_direction(Direction::Right),
+
+            (GameState::Start, "w" | "arrowup") => {
+                set_game_state(GameState::Play);
+                set_direction(Direction::Up)
+            }
+            (GameState::Start, "a" | "arrowleft") => {
+                set_game_state(GameState::Play);
+                set_direction(Direction::Left)
+            }
+            (GameState::Start, "s" | "arrowdown") => {
+                set_game_state(GameState::Play);
+                set_direction(Direction::Down)
+            }
+            (GameState::Start, "d" | "arrowright") => {
+                set_game_state(GameState::Play);
+                set_direction(Direction::Right)
+            }
+
+            (GameState::Play, " ") => set_game_state(GameState::Pause),
+            (GameState::Loose, " ") => set_game_state(GameState::Start),
+            (GameState::Pause, " ") => set_game_state(GameState::Play),
+
+            _ => {}
+        }
+    });
+
+    // Set the interval for the game loop
     create_effect(cx, move |handle: Option<Option<_>>| match game_state() {
         GameState::Play => {
+            debug!("Creating event loop");
             if let Some(None) = handle {
-                Some(
+                return Some(
                     set_interval_with_handle(interval_fn, get_tick_length())
                         .expect("Set interval for game loop failed"),
-                )
-            } else {
-                None
+                );
             }
+
+            None
         }
-        GameState::Loose | GameState::Pause => {
+        GameState::Loose | GameState::Pause | GameState::Start => {
             if let Some(Some(handle)) = handle {
                 handle.clear();
             }
@@ -109,9 +136,13 @@ pub fn App(cx: Scope) -> impl IntoView {
         }
     });
 
+    // --------------------
+    // RENDERS HERE
+    // --------------------
     view! {
         cx,
-        <div class={"game"} style={format!("width: {0}px; height: {0}px;", SIZE * BLOCK_SIZE)}>
+        <div class={move || format!("game {}", game_state().class())} style={format!("width: {0}px; height: {0}px;", SIZE * BLOCK_SIZE)}>
+            <Screens />
             <Head head=head_position />
         </div>
     }
@@ -125,10 +156,7 @@ where
     let duration = get_tick_length();
 
     let x = tweened(cx, move || (head().x * 25) as f64, duration);
-    let y = tweened(cx, move || (head().y * 25) as f64, duration.clone());
-
-    // let x = move || (head().x * 25);
-    // let y = move || (head().y * 25);
+    let y = tweened(cx, move || (head().y * 25) as f64, duration);
 
     view! {
         cx,
@@ -144,10 +172,33 @@ where
     let duration = get_tick_length();
 
     let x = tweened(cx, move || (head().x * 25) as f64, duration);
-    let y = tweened(cx, move || (head().y * 25) as f64, duration.clone());
+    let y: ReadSignal<f64> = tweened(cx, move || (head().y * 25) as f64, duration);
 
     view! {
         cx,
         <div class={"tail"} style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
+    }
+}
+
+#[component]
+fn Screens(cx: Scope) -> impl IntoView {
+    view! {
+        cx,
+        <>
+            <div class="screen start">
+                <h1>"Snake"</h1>
+                <p>"Press W A S D or the arrow keys to play"</p>
+            </div>
+
+            <div class="screen pause">
+                <h1>"Game Paused"</h1>
+                <p>"Press space to continue"</p>
+            </div>
+
+            <div class="screen loose">
+                <h1>"You lost"</h1>
+                <p>"Press space to reset"</p>
+            </div>
+        </>
     }
 }

@@ -4,6 +4,7 @@ use leptos::{
     leptos_dom::helpers::{location_pathname, IntervalHandle},
     *,
 };
+use std::fmt::Debug;
 use std::{cell::Cell, rc::Rc};
 
 pub fn get_tick_length() -> Duration {
@@ -17,7 +18,7 @@ pub fn get_tick_length() -> Duration {
     )
 }
 
-pub fn set_interval_with_cancel(cb: impl Fn(Box<dyn Fn() -> ()>) + 'static, duration: Duration) {
+pub fn set_interval_with_cancel(cb: impl Fn(Box<dyn Fn()>) + 'static, duration: Duration) {
     let handle: Rc<Cell<Option<IntervalHandle>>> = Rc::default();
     let intermediate = handle.clone();
     handle.set(
@@ -26,7 +27,9 @@ pub fn set_interval_with_cancel(cb: impl Fn(Box<dyn Fn() -> ()>) + 'static, dura
                 let intermediate = intermediate.clone();
 
                 let cancel = move || {
-                    intermediate.get().map(|handle| handle.clear());
+                    if let Some(handle) = intermediate.get() {
+                        handle.clear()
+                    }
                 };
 
                 cb(Box::new(cancel))
@@ -53,13 +56,14 @@ where
         }
 
         let start = Instant::now();
-        let end = start + duration.clone();
+        let end = start + duration;
 
         set_interval_with_cancel(
             move |cancel| {
                 let now: Instant = Instant::now();
 
                 if now > end {
+                    set_f(value);
                     cancel();
                 } else {
                     let calculated =
@@ -81,4 +85,15 @@ where
     });
 
     f
+}
+
+#[allow(dead_code)]
+pub fn create_debug<T, F>(cx: Scope, signal: F)
+where
+    T: Debug,
+    F: Fn() -> T + 'static,
+{
+    create_effect(cx, move |_| {
+        log::debug!("{:?}", signal());
+    });
 }
