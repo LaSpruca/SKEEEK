@@ -1,42 +1,9 @@
-use crate::util::{get_tick_length, tweened};
+use crate::{
+    data::*,
+    util::{get_tick_length, rand_range, tweened},
+};
 use leptos::*;
 use log::debug;
-
-const SIZE: i32 = 20;
-const BLOCK_SIZE: i32 = 25;
-
-#[derive(Debug, Clone, Copy)]
-struct Position {
-    x: i32,
-    y: i32,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum GameState {
-    Play,
-    Loose,
-    Pause,
-    Start,
-}
-
-impl GameState {
-    fn class(&self) -> &str {
-        match self {
-            GameState::Play => "",
-            GameState::Loose => "loose",
-            GameState::Pause => "pause",
-            GameState::Start => "start",
-        }
-    }
-}
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
@@ -44,40 +11,74 @@ pub fn App(cx: Scope) -> impl IntoView {
     let (head_position, set_head_position) = create_signal(cx, Position { x: 0, y: 0 });
     let (direction, set_direction) = create_signal(cx, Direction::Down);
     let (game_state, set_game_state) = create_signal(cx, GameState::Start);
+    let (fruit_position, set_fruit_position) = create_signal(cx, Position { x: 0, y: 0 });
+    let tail = Tail::new(cx);
 
-    let interval_fn = move || match direction() {
-        Direction::Up => set_head_position.update(|mut pos| {
-            pos.y -= 1;
+    let new_random_fruit = move || {
+        let mut new_position;
+        while {
+            let x = rand_range(0.0, SIZE as f64).floor() as i32;
+            let y = rand_range(0.0, SIZE as f64).floor() as i32;
 
-            if pos.y < 0 {
-                pos.y += 1;
-                set_game_state(GameState::Loose);
-            }
-        }),
-        Direction::Down => set_head_position.update(|mut pos| {
-            pos.y += 1;
+            new_position = Position { x, y };
 
-            if pos.y > SIZE - 1 {
+            log::debug!("New fruit position: {:?}", new_position);
+
+            head_position() == new_position || tail.contains(new_position)
+        } {}
+
+        set_fruit_position(new_position);
+    };
+
+    new_random_fruit();
+
+    let interval_fn = move || {
+        let old_position = head_position();
+        match direction() {
+            Direction::Up => set_head_position.update(|mut pos| {
                 pos.y -= 1;
-                set_game_state(GameState::Loose);
-            }
-        }),
-        Direction::Left => set_head_position.update(|mut pos| {
-            pos.x -= 1;
 
-            if pos.x < 0 {
-                pos.x += 1;
-                set_game_state(GameState::Loose);
-            }
-        }),
-        Direction::Right => set_head_position.update(|mut pos| {
-            pos.x += 1;
+                if pos.y < 0 {
+                    pos.y += 1;
+                    set_game_state(GameState::Loose);
+                }
+            }),
+            Direction::Down => set_head_position.update(|mut pos| {
+                pos.y += 1;
 
-            if pos.x > SIZE - 1 {
+                if pos.y > SIZE - 1 {
+                    pos.y -= 1;
+                    set_game_state(GameState::Loose);
+                }
+            }),
+            Direction::Left => set_head_position.update(|mut pos| {
                 pos.x -= 1;
-                set_game_state(GameState::Loose);
-            }
-        }),
+
+                if pos.x < 0 {
+                    pos.x += 1;
+                    set_game_state(GameState::Loose);
+                }
+            }),
+            Direction::Right => set_head_position.update(|mut pos| {
+                pos.x += 1;
+
+                if pos.x > SIZE - 1 {
+                    pos.x -= 1;
+                    set_game_state(GameState::Loose);
+                }
+            }),
+        }
+
+        if tail.contains(head_position()) {
+            set_game_state(GameState::Loose);
+        }
+
+        if head_position() == fruit_position() {
+            tail.push(cx, old_position);
+            new_random_fruit();
+        } else if !tail.is_empty() {
+            tail.update(old_position);
+        }
     };
 
     // Setup keyboard event listener
@@ -107,7 +108,12 @@ pub fn App(cx: Scope) -> impl IntoView {
             }
 
             (GameState::Play, " ") => set_game_state(GameState::Pause),
-            (GameState::Loose, " ") => set_game_state(GameState::Start),
+            (GameState::Loose, " ") => {
+                set_game_state(GameState::Start);
+                set_head_position(Position { x: 0, y: 0 });
+                new_random_fruit();
+                tail.clear();
+            }
             (GameState::Pause, " ") => set_game_state(GameState::Play),
 
             _ => {}
@@ -141,9 +147,11 @@ pub fn App(cx: Scope) -> impl IntoView {
     // --------------------
     view! {
         cx,
-        <div class={move || format!("game {}", game_state().class())} style={format!("width: {0}px; height: {0}px;", SIZE * BLOCK_SIZE)}>
+        <div class={move || format!("game {}", game_state().class())} style={format!("width: {0}px; height: {0}px; --size: {1}px;", SIZE * BLOCK_SIZE, BLOCK_SIZE)}>
             <Screens />
             <Head head=head_position />
+            <Fruit fruit=fruit_position />
+            <For each=tail key={|(index, _)| *index} view={|cx, (_, tile)| view! {cx, <Tail tile/>}}/>
         </div>
     }
 }
@@ -155,28 +163,42 @@ where
 {
     let duration = get_tick_length();
 
-    let x = tweened(cx, move || (head().x * 25) as f64, duration);
-    let y = tweened(cx, move || (head().y * 25) as f64, duration);
+    let x = tweened(cx, move || (head().x * BLOCK_SIZE) as f64, duration);
+    let y = tweened(cx, move || (head().y * BLOCK_SIZE) as f64, duration);
 
     view! {
         cx,
-        <div class={"head"} style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
+        <div class="tile head" style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
     }
 }
 
 #[component]
-fn Tail<T>(cx: Scope, head: T) -> impl IntoView
+fn Tail<T>(cx: Scope, tile: T) -> impl IntoView
 where
     T: Fn() -> Position + 'static + Copy,
 {
     let duration = get_tick_length();
 
-    let x = tweened(cx, move || (head().x * 25) as f64, duration);
-    let y: ReadSignal<f64> = tweened(cx, move || (head().y * 25) as f64, duration);
+    let x = tweened(cx, move || (tile().x * BLOCK_SIZE) as f64, duration);
+    let y: ReadSignal<f64> = tweened(cx, move || (tile().y * BLOCK_SIZE) as f64, duration);
 
     view! {
         cx,
-        <div class={"tail"} style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
+        <div class="tile tail" style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
+    }
+}
+
+#[component]
+fn Fruit<T>(cx: Scope, fruit: T) -> impl IntoView
+where
+    T: Fn() -> Position + 'static + Copy,
+{
+    let x = move || fruit().x * BLOCK_SIZE;
+    let y = move || fruit().y * BLOCK_SIZE;
+
+    view! {
+        cx,
+        <div class="tile fruit" style={move || format!("top: {y}px; left: {x}px", x =  x(), y = y()) }/>
     }
 }
 

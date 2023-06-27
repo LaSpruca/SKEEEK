@@ -1,5 +1,6 @@
 use instant::Duration;
 use instant::Instant;
+use js_sys::Math::random;
 use leptos::{
     leptos_dom::helpers::{location_pathname, IntervalHandle},
     *,
@@ -85,6 +86,10 @@ where
     });
 
     f
+}
+
+pub fn rand_range(start: f64, end: f64) -> f64 {
+    random() * (end - start) + start
 }
 
 #[allow(dead_code)]

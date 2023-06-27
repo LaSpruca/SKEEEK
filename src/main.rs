@@ -1,10 +1,12 @@
-use std::panic;
+#![feature(unboxed_closures, fn_traits)]
 
 use components::App;
 use leptos::{mount_to_body, view};
 use log::Level;
+use std::panic;
 
 mod components;
+mod data;
 mod util;
 
 fn main() {

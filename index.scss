@@ -3,15 +3,24 @@
   background-color: gray;
   border: 1px solid black;
 
-  .head {
+  .tile {
+    z-index: 1;
     position: absolute;
-    width: 25px;
-    height: 25px;
+    width: var(--size);
+    height: var(--size);
+  }
+
+  .head {
     background-color: green;
+  }
+
+  .fruit {
+    background-color: red;
   }
 
   .screen {
     display: none;
+    z-index: 2;
   }
 
   &.start .screen.start {
