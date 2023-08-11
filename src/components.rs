@@ -1,9 +1,11 @@
+use std::sync::atomic::AtomicBool;
+
 use crate::{
     data::*,
     util::{get_tick_length, rand_range, tweened},
 };
 use leptos::*;
-use log::debug;
+use log::{debug, info};
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
@@ -12,6 +14,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     let (direction, set_direction) = create_signal(cx, Direction::Down);
     let (game_state, set_game_state) = create_signal(cx, GameState::Start);
     let (fruit_position, set_fruit_position) = create_signal(cx, Position { x: 0, y: 0 });
+    // let (update_next, set_update_next) = create_signal(cx, true);
     let tail = Tail::new(cx);
 
     let new_random_fruit = move || {
@@ -22,7 +25,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 
             new_position = Position { x, y };
 
-            log::debug!("New fruit position: {:?}", new_position);
+            debug!("New fruit position: {:?}", new_position);
 
             head_position() == new_position || tail.contains(new_position)
         } {}
@@ -69,17 +72,30 @@ pub fn App(cx: Scope) -> impl IntoView {
             }),
         }
 
-        if tail.contains(head_position()) {
+        if tail.contains(head_position.get_untracked()) {
             set_game_state(GameState::Loose);
         }
 
-        if head_position() == fruit_position() {
-            tail.push(cx, old_position);
+        if head_position.get_untracked() == fruit_position.get_untracked() {
+            if !tail.is_empty() {
+                tail.update(head_position.get_untracked());
+            }
+            tail.push(cx, head_position.get_untracked());
             new_random_fruit();
+            // set_update_next(false);
         } else if !tail.is_empty() {
+            // if update_next() {
+            //     tail.update(old_position);
+            // } else {
+            //     set_update_next(true);
+            // }
             tail.update(old_position);
         }
     };
+
+    create_effect(cx, move |_| {
+        info!("{}", tail().len());
+    });
 
     // Setup keyboard event listener
     window_event_listener(ev::keydown, move |kb_event| {
@@ -180,7 +196,7 @@ where
     let duration = get_tick_length();
 
     let x = tweened(cx, move || (tile().x * BLOCK_SIZE) as f64, duration);
-    let y: ReadSignal<f64> = tweened(cx, move || (tile().y * BLOCK_SIZE) as f64, duration);
+    let y = tweened(cx, move || (tile().y * BLOCK_SIZE) as f64, duration);
 
     view! {
         cx,

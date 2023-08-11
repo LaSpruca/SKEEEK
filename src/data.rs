@@ -1,4 +1,5 @@
 use leptos::*;
+use log::info;
 
 pub const SIZE: i32 = 20;
 pub const BLOCK_SIZE: i32 = 25;
@@ -39,11 +40,22 @@ impl Tail {
     }
 
     pub fn update(&self, position: Position) {
+        info!("Are we even logging?");
         self.read.with_untracked(|items| {
             items
                 .iter()
-                .zip([position].into_iter().chain(items.iter().map(|(x, _)| x())))
-                .for_each(|((_, write), value)| write(value));
+                .zip(
+                    [position]
+                        .into_iter()
+                        .chain(items.iter().map(|(x, _)| x()))
+                        .collect::<Vec<_>>(),
+                )
+                .enumerate()
+                .for_each(|(i, ((curr, write), value))| {
+                    info!("Setting {i} from {:?} to {value:?}", curr.get_untracked());
+
+                    write(value);
+                });
         });
     }
 
